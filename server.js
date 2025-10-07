@@ -1,7 +1,6 @@
 import express from "express";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
-import verifyToken from "./middleware/verifytoken.js";
 
 const app = express()
 connectDB()
