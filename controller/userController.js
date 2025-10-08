@@ -30,10 +30,14 @@ export const userLogin = async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(401).json({ message: "Invalid credentials" });
 
-        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1m" });
+        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
-        res.status(200).json({ accessToken, refreshToken });
+        res.cookie("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: 'Strict' });
+        res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: 'Strict' });
+
+        res.status(200).json({ message: "Login successful" });
+        
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -44,8 +48,8 @@ export const getNewAccessToken = async (req, res) => {
         const { refreshToken } = req.body;
         if (!refreshToken) return res.status(401).json({ message: "Access denied" });
 
-        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
-        const accessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: "1m" });
+        jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const accessToken = jwt.sign({ id: req.user }, process.env.JWT_SECRET, { expiresIn: "1m" });
 
         res.status(200).json({ accessToken });
     } catch (err) {
