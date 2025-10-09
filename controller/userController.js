@@ -33,8 +33,8 @@ export const userLogin = async (req, res) => {
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
-        res.cookie("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: 'Strict' });
-        res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: 'Strict' });
+        res.cookie("accessToken", accessToken, { httpOnly: true });
+        res.cookie("refreshToken", refreshToken, { httpOnly: true });
 
         res.status(200).json({ message: "Login successful" });
         
@@ -45,13 +45,14 @@ export const userLogin = async (req, res) => {
 
 export const getNewAccessToken = async (req, res) => {
     try {
-        const { refreshToken } = req.body;
+        const { refreshToken } = req.cookies;
         if (!refreshToken) return res.status(401).json({ message: "Access denied" });
 
-        jwt.verify(refreshToken, process.env.JWT_SECRET);
-        const accessToken = jwt.sign({ id: req.user }, process.env.JWT_SECRET, { expiresIn: "1m" });
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const accessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: "1m" });
 
-        res.status(200).json({ accessToken });
+        res.cookie("accessToken", accessToken, { httpOnly: true });
+        res.status(200).json({ message: "Access token refreshed successfully" });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

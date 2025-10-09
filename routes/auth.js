@@ -9,7 +9,7 @@ router.post("/login", userLogin)
 router.get('/', verifyToken, (req, res) => {
   res.status(200).json({ message: 'Protected route accessed successfully' });
 });
-router.post("/refresh", getNewAccessToken)
+router.post("/refresh", csrfProtection, getNewAccessToken)
 router.get("/csrf", csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() })
 })

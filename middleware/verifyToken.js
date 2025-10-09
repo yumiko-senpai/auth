@@ -1,16 +1,20 @@
 import jwt from "jsonwebtoken";
 
 const verifyToken = (req, res, next) => {
-const   accessTokenoken = req.headers['authorization']?.split(' ')[1]
-  if (!accessTokenoken) return res.status(401).json({ message: 'Access Denied' })
+
+  const accessToken = req.cookies.accessToken;
+
+  if (!accessToken) {
+    return res.status(401).json({ message: "Access Denied. No token provided." });
+  }
 
   try {
-    const verfied = jwt.verify(accessTokenoken, process.env.JWT_SECRET)
-    req.user = verfied
-    next()
+    const verified = jwt.verify(accessToken, process.env.JWT_SECRET);
+    req.user = verified;
+    next();
   } catch (err) {
-    res.status(400).json({ message: 'Invalid Token' })
+    return res.status(403).json({ message: "Invalid or expired token." });
   }
-}
+};
 
-export default verifyToken
+export default verifyToken;
